@@ -7,9 +7,20 @@ dotenv.config();
 const app = express();
 require("./db");
 
-app.use(cors());
+/* CORS FIX */
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://frontend-6133.up.railway.app"
+    ],
+    credentials: true
+  })
+);
+
 app.use(express.json());
 
+/* Routes */
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/test", require("./routes/testRoutes"));
 app.use("/api/projects", require("./routes/projectRoutes"));
