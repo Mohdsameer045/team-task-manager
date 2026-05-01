@@ -25,7 +25,7 @@ function Dashboard() {
     due_date: ""
   });
 
-  const API = "https://team-task-manager-production-030d.up.railway.app";
+  const API = "https://backend-030d.up.railway.app";
 
   const headers = {
     headers: {
