@@ -113,7 +113,7 @@ function Dashboard() {
   const updateStatus = async (id, status) => {
     try {
       await axios.put(
-        `${API}/api/tasks/update/${id}`,
+        `${API}/api/tasks/status/${id}`,
         { status },
         headers
       );
