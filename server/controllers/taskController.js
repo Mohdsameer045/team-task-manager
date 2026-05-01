@@ -13,6 +13,12 @@ exports.createTask = (req, res) => {
 
   const created_by = req.user.id;
 
+  if (!title || !project_id || !assigned_to) {
+    return res.status(400).json({
+      message: "Title, Project, Assigned User required"
+    });
+  }
+
   const sql = `
     INSERT INTO tasks
     (title, description, due_date, priority, project_id, assigned_to, created_by)
@@ -23,15 +29,18 @@ exports.createTask = (req, res) => {
     sql,
     [
       title,
-      description,
-      due_date,
-      priority,
+      description || "",
+      due_date || null,
+      priority || "medium",
       project_id,
       assigned_to,
       created_by
     ],
     (err, result) => {
-      if (err) return res.status(500).json(err);
+      if (err) {
+        console.log(err);
+        return res.status(500).json(err);
+      }
 
       res.status(201).json({
         message: "Task created successfully",
