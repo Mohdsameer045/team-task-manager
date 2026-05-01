@@ -24,17 +24,17 @@ function Dashboard() {
   const loadData = async () => {
     try {
       const p = await axios.get(
-        "http://localhost:5000/api/projects/all",
+        "https://team-task-manager-production-030d.up.railway.app/api/projects/all",
         headers
       );
 
       const t = await axios.get(
-        "http://localhost:5000/api/tasks/all",
+        "https://team-task-manager-production-030d.up.railway.app/api/tasks/all",
         headers
       );
 
       const o = await axios.get(
-        "http://localhost:5000/api/tasks/overdue",
+        "https://team-task-manager-production-030d.up.railway.app/api/tasks/overdue",
         headers
       );
 
