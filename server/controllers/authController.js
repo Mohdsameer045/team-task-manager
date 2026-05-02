@@ -8,7 +8,6 @@ const jwt = require("jsonwebtoken");
 exports.signup = async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  // Validation
   if (!name || !email || !password) {
     return res.status(400).json({
       message: "All fields required"
@@ -18,7 +17,6 @@ exports.signup = async (req, res) => {
   const checkUser = "SELECT * FROM users WHERE email = ?";
 
   db.query(checkUser, [email], async (err, result) => {
-    // DB Error
     if (err) {
       console.log("Signup Check Error:", err);
       return res.status(500).json({
@@ -26,7 +24,6 @@ exports.signup = async (req, res) => {
       });
     }
 
-    // Already Exists
     if (result && result.length > 0) {
       return res.status(400).json({
         message: "Email already exists"
@@ -42,7 +39,7 @@ exports.signup = async (req, res) => {
       db.query(
         sql,
         [name, email, hashedPassword, role || "member"],
-        (err, data) => {
+        (err) => {
           if (err) {
             console.log("Signup Insert Error:", err);
             return res.status(500).json({
@@ -70,7 +67,6 @@ exports.signup = async (req, res) => {
 exports.login = (req, res) => {
   const { email, password } = req.body;
 
-  // Validation
   if (!email || !password) {
     return res.status(400).json({
       message: "Email and password required"
@@ -80,7 +76,6 @@ exports.login = (req, res) => {
   const sql = "SELECT * FROM users WHERE email = ?";
 
   db.query(sql, [email], async (err, result) => {
-    // DB Error
     if (err) {
       console.log("Login Error:", err);
       return res.status(500).json({
@@ -88,7 +83,6 @@ exports.login = (req, res) => {
       });
     }
 
-    // User Not Found
     if (!result || result.length === 0) {
       return res.status(404).json({
         message: "User not found"
@@ -106,12 +100,15 @@ exports.login = (req, res) => {
         });
       }
 
+      const SECRET =
+        process.env.JWT_SECRET || "mysecretkey123";
+
       const token = jwt.sign(
         {
           id: user.id,
           role: user.role
         },
-        process.env.JWT_SECRET || "secretkey",
+        SECRET,
         { expiresIn: "7d" }
       );
 
