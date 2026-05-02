@@ -10,7 +10,6 @@ function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [overdue, setOverdue] = useState([]);
-  const [members, setMembers] = useState([]);
 
   const [projectForm, setProjectForm] = useState({
     title: "",
@@ -46,19 +45,7 @@ function Dashboard() {
       setProjects(p.data);
       setTasks(t.data);
       setOverdue(o.data);
-
-      const uniqueUsers = [];
-      t.data.forEach((item) => {
-        if (
-          item.assignedUser &&
-          !uniqueUsers.includes(item.assignedUser)
-        ) {
-          uniqueUsers.push(item.assignedUser);
-        }
-      });
-
-      setMembers(uniqueUsers);
-    } catch (error) {
+    } catch {
       alert("Failed to load dashboard");
     }
   };
@@ -77,10 +64,12 @@ function Dashboard() {
       );
 
       alert("Project Created");
+
       setProjectForm({
         title: "",
         description: ""
       });
+
       loadData();
     } catch {
       alert("Project creation failed");
@@ -96,6 +85,7 @@ function Dashboard() {
       );
 
       alert("Task Created");
+
       setTaskForm({
         title: "",
         description: "",
@@ -135,6 +125,10 @@ function Dashboard() {
     (item) => item.status === "pending"
   );
 
+  const progressTasks = myTasks.filter(
+    (item) => item.status === "in_progress"
+  );
+
   const completedTasks = myTasks.filter(
     (item) => item.status === "completed"
   );
@@ -167,7 +161,6 @@ function Dashboard() {
         {/* ADMIN */}
         {user?.role === "admin" && (
           <>
-            {/* Cards */}
             <div className="grid md:grid-cols-3 gap-6 mb-8">
 
               <div className="bg-slate-900 p-6 rounded-2xl border border-cyan-500">
@@ -193,8 +186,7 @@ function Dashboard() {
 
             </div>
 
-            {/* Forms */}
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="grid md:grid-cols-2 gap-6">
 
               {/* Create Project */}
               <div className="bg-slate-900 p-6 rounded-2xl">
@@ -277,10 +269,7 @@ function Dashboard() {
                   <option value="">Select Project</option>
 
                   {projects.map((item) => (
-                    <option
-                      key={item.id}
-                      value={item.id}
-                    >
+                    <option key={item.id} value={item.id}>
                       {item.title}
                     </option>
                   ))}
@@ -319,57 +308,13 @@ function Dashboard() {
               </div>
 
             </div>
-
-            {/* Lists */}
-            <div className="grid md:grid-cols-2 gap-6">
-
-              <div className="bg-slate-900 p-6 rounded-2xl">
-                <h2 className="text-cyan-400 text-2xl font-bold mb-4">
-                  Projects
-                </h2>
-
-                {projects.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-slate-800 p-4 mb-3 rounded"
-                  >
-                    <p className="font-bold">
-                      {item.title}
-                    </p>
-                    <p className="text-sm text-slate-400">
-                      {item.description}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-slate-900 p-6 rounded-2xl">
-                <h2 className="text-green-400 text-2xl font-bold mb-4">
-                  Tasks
-                </h2>
-
-                {tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    className="bg-slate-800 p-4 mb-3 rounded"
-                  >
-                    <p className="font-bold">
-                      {task.title}
-                    </p>
-                    <p>{task.assignedUser}</p>
-                    <p>{task.status}</p>
-                  </div>
-                ))}
-              </div>
-
-            </div>
           </>
         )}
 
         {/* MEMBER */}
         {user?.role === "member" && (
           <>
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="grid md:grid-cols-4 gap-6 mb-8">
 
               <div className="bg-slate-900 p-6 rounded-2xl border border-cyan-500">
                 <h2 className="text-4xl text-cyan-400 font-bold">
@@ -383,6 +328,13 @@ function Dashboard() {
                   {pendingTasks.length}
                 </h2>
                 <p>Pending</p>
+              </div>
+
+              <div className="bg-slate-900 p-6 rounded-2xl border border-blue-500">
+                <h2 className="text-4xl text-blue-400 font-bold">
+                  {progressTasks.length}
+                </h2>
+                <p>Progress</p>
               </div>
 
               <div className="bg-slate-900 p-6 rounded-2xl border border-green-500">
@@ -404,13 +356,10 @@ function Dashboard() {
                   key={task.id}
                   className="bg-slate-800 p-4 mb-4 rounded-xl"
                 >
-                  <p className="font-bold">
-                    {task.title}
-                  </p>
+                  <p className="font-bold">{task.title}</p>
 
                   <p>
-                    Due:
-                    {task.due_date?.slice(0, 10)}
+                    Due: {task.due_date?.slice(0, 10)}
                   </p>
 
                   <p>Status: {task.status}</p>
@@ -419,10 +368,7 @@ function Dashboard() {
 
                     <button
                       onClick={() =>
-                        updateStatus(
-                          task.id,
-                          "pending"
-                        )
+                        updateStatus(task.id, "pending")
                       }
                       className="bg-yellow-500 px-3 py-1 rounded"
                     >
@@ -433,7 +379,7 @@ function Dashboard() {
                       onClick={() =>
                         updateStatus(
                           task.id,
-                          "in progress"
+                          "in_progress"
                         )
                       }
                       className="bg-blue-500 px-3 py-1 rounded"
