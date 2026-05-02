@@ -1,6 +1,8 @@
 const db = require("../db");
 
-// Create Task (Admin)
+// =======================
+// Create Task
+// =======================
 exports.createTask = (req, res) => {
   const {
     title,
@@ -19,38 +21,63 @@ exports.createTask = (req, res) => {
     });
   }
 
-  const sql = `
-    INSERT INTO tasks
-    (title, description, due_date, priority, project_id, assigned_to, created_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
+  // If assigned_to is name -> convert to user id
+  const findUser =
+    "SELECT id FROM users WHERE id = ? OR name = ? LIMIT 1";
 
-  db.query(
-    sql,
-    [
-      title,
-      description || "",
-      due_date || null,
-      priority || "medium",
-      project_id,
-      assigned_to,
-      created_by
-    ],
-    (err, result) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json(err);
-      }
-
-      res.status(201).json({
-        message: "Task created successfully",
-        taskId: result.insertId
+  db.query(findUser, [assigned_to, assigned_to], (err, userResult) => {
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: "User lookup failed"
       });
     }
-  );
+
+    if (!userResult || userResult.length === 0) {
+      return res.status(404).json({
+        message: "Assigned user not found"
+      });
+    }
+
+    const userId = userResult[0].id;
+
+    const sql = `
+      INSERT INTO tasks
+      (title, description, due_date, priority, project_id, assigned_to, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      sql,
+      [
+        title,
+        description || "",
+        due_date || null,
+        priority || "medium",
+        project_id,
+        userId,
+        created_by
+      ],
+      (err, result) => {
+        if (err) {
+          console.log("Create Task Error:", err);
+          return res.status(500).json({
+            message: "Task creation failed"
+          });
+        }
+
+        res.status(201).json({
+          message: "Task created successfully",
+          taskId: result.insertId
+        });
+      }
+    );
+  });
 };
 
-// Get All Tasks
+// =======================
+// Get Tasks
+// =======================
 exports.getTasks = (req, res) => {
   const sql = `
     SELECT 
@@ -64,13 +91,20 @@ exports.getTasks = (req, res) => {
   `;
 
   db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: "Failed to load tasks"
+      });
+    }
 
     res.json(result);
   });
 };
 
+// =======================
 // Update Status
+// =======================
 exports.updateTaskStatus = (req, res) => {
   const { status } = req.body;
   const taskId = req.params.id;
@@ -79,7 +113,12 @@ exports.updateTaskStatus = (req, res) => {
     "UPDATE tasks SET status = ? WHERE id = ?";
 
   db.query(sql, [status, taskId], (err) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: "Status update failed"
+      });
+    }
 
     res.json({
       message: "Task status updated"
@@ -87,7 +126,9 @@ exports.updateTaskStatus = (req, res) => {
   });
 };
 
+// =======================
 // Overdue Tasks
+// =======================
 exports.getOverdueTasks = (req, res) => {
   const sql = `
     SELECT * FROM tasks
@@ -96,7 +137,12 @@ exports.getOverdueTasks = (req, res) => {
   `;
 
   db.query(sql, (err, result) => {
-    if (err) return res.status(500).json(err);
+    if (err) {
+      console.log(err);
+      return res.status(500).json({
+        message: "Failed to load overdue tasks"
+      });
+    }
 
     res.json(result);
   });
