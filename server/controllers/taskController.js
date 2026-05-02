@@ -21,7 +21,6 @@ exports.createTask = (req, res) => {
     });
   }
 
-  // If assigned_to is name -> convert to user id
   const findUser =
     "SELECT id FROM users WHERE id = ? OR name = ? LIMIT 1";
 
@@ -43,8 +42,8 @@ exports.createTask = (req, res) => {
 
     const sql = `
       INSERT INTO tasks
-      (title, description, due_date, priority, project_id, assigned_to, created_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      (title, description, due_date, priority, project_id, assigned_to, created_by, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
@@ -56,7 +55,8 @@ exports.createTask = (req, res) => {
         priority || "medium",
         project_id,
         userId,
-        created_by
+        created_by,
+        "pending"
       ],
       (err, result) => {
         if (err) {
@@ -106,15 +106,33 @@ exports.getTasks = (req, res) => {
 // Update Status
 // =======================
 exports.updateTaskStatus = (req, res) => {
-  const { status } = req.body;
+  let { status } = req.body;
   const taskId = req.params.id;
+
+  // 🔥 convert progress -> in_progress
+  if (status === "progress") {
+    status = "in_progress";
+  }
+
+  // allowed statuses
+  const allowed = [
+    "pending",
+    "in_progress",
+    "completed"
+  ];
+
+  if (!allowed.includes(status)) {
+    return res.status(400).json({
+      message: "Invalid status"
+    });
+  }
 
   const sql =
     "UPDATE tasks SET status = ? WHERE id = ?";
 
   db.query(sql, [status, taskId], (err) => {
     if (err) {
-      console.log(err);
+      console.log("Status Error:", err);
       return res.status(500).json({
         message: "Status update failed"
       });
