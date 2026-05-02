@@ -11,6 +11,8 @@ function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [overdue, setOverdue] = useState([]);
 
+  const [showPanel, setShowPanel] = useState("");
+
   const [projectForm, setProjectForm] = useState({
     title: "",
     description: ""
@@ -163,21 +165,30 @@ function Dashboard() {
           <>
             <div className="grid md:grid-cols-3 gap-6 mb-8">
 
-              <div className="bg-slate-900 p-6 rounded-2xl border border-cyan-500">
+              <div
+                onClick={() => setShowPanel("projects")}
+                className="bg-slate-900 p-6 rounded-2xl border border-cyan-500 cursor-pointer"
+              >
                 <h2 className="text-4xl text-cyan-400 font-bold">
                   {projects.length}
                 </h2>
                 <p>Projects</p>
               </div>
 
-              <div className="bg-slate-900 p-6 rounded-2xl border border-green-500">
+              <div
+                onClick={() => setShowPanel("tasks")}
+                className="bg-slate-900 p-6 rounded-2xl border border-green-500 cursor-pointer"
+              >
                 <h2 className="text-4xl text-green-400 font-bold">
                   {tasks.length}
                 </h2>
                 <p>Tasks</p>
               </div>
 
-              <div className="bg-slate-900 p-6 rounded-2xl border border-red-500">
+              <div
+                onClick={() => setShowPanel("overdue")}
+                className="bg-slate-900 p-6 rounded-2xl border border-red-500 cursor-pointer"
+              >
                 <h2 className="text-4xl text-red-400 font-bold">
                   {overdue.length}
                 </h2>
@@ -185,6 +196,58 @@ function Dashboard() {
               </div>
 
             </div>
+
+            {/* CENTER PANEL */}
+            {showPanel && (
+              <div className="bg-slate-900 p-6 rounded-2xl mb-8">
+                <div className="flex justify-between mb-4">
+                  <h2 className="text-2xl text-cyan-400 font-bold">
+                    {showPanel.toUpperCase()}
+                  </h2>
+
+                  <button
+                    onClick={() => setShowPanel("")}
+                    className="bg-red-500 px-3 py-1 rounded"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                {showPanel === "projects" &&
+                  projects.map((item) => (
+                    <div
+                      key={item.id}
+                      className="bg-slate-800 p-4 mb-3 rounded"
+                    >
+                      <p className="font-bold">{item.title}</p>
+                      <p>{item.description}</p>
+                    </div>
+                  ))}
+
+                {showPanel === "tasks" &&
+                  tasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="bg-slate-800 p-4 mb-3 rounded"
+                    >
+                      <p className="font-bold">{task.title}</p>
+                      <p>Assigned: {task.assignedUser}</p>
+                      <p>Status: {task.status}</p>
+                    </div>
+                  ))}
+
+                {showPanel === "overdue" &&
+                  overdue.map((task) => (
+                    <div
+                      key={task.id}
+                      className="bg-slate-800 p-4 mb-3 rounded"
+                    >
+                      <p className="font-bold">{task.title}</p>
+                      <p>Due: {task.due_date?.slice(0, 10)}</p>
+                    </div>
+                  ))}
+              </div>
+            )}
 
             <div className="grid md:grid-cols-2 gap-6">
 
@@ -357,11 +420,7 @@ function Dashboard() {
                   className="bg-slate-800 p-4 mb-4 rounded-xl"
                 >
                   <p className="font-bold">{task.title}</p>
-
-                  <p>
-                    Due: {task.due_date?.slice(0, 10)}
-                  </p>
-
+                  <p>Due: {task.due_date?.slice(0, 10)}</p>
                   <p>Status: {task.status}</p>
 
                   <div className="flex gap-3 mt-3">
@@ -377,10 +436,7 @@ function Dashboard() {
 
                     <button
                       onClick={() =>
-                        updateStatus(
-                          task.id,
-                          "in_progress"
-                        )
+                        updateStatus(task.id, "in_progress")
                       }
                       className="bg-blue-500 px-3 py-1 rounded"
                     >
@@ -389,10 +445,7 @@ function Dashboard() {
 
                     <button
                       onClick={() =>
-                        updateStatus(
-                          task.id,
-                          "completed"
-                        )
+                        updateStatus(task.id, "completed")
                       }
                       className="bg-green-500 px-3 py-1 rounded"
                     >
